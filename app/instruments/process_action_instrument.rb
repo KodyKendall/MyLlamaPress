@@ -17,7 +17,14 @@ class ProcessActionInstrument
         log.debug "event_user => #{user.inspect}"
       end
 
-      Mixpanel.track(user.public_id, name, properties, payload[:request].ip)
+      ip = payload[:request].ip || user.current_sign_in_ip || user.last_sign_in_ip
+
+      Mixpanel.track(user.public_id, name, properties, ip)
+
+      return unless Mixpanel.people_set_recent?(user)
+
+      Mixpanel.client.people_set(user.public_id, Mixpanel.expand_user_properties(user), ip, )
+      user.update_column(:mixpanel_profile_last_set_at, Time.current)
     end
 
     private
