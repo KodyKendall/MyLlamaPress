@@ -14,6 +14,10 @@ module Mixpanel
 
     def self.expand_user_properties(user)
         { '$email' => user.email,
+        '$first_name' => user.first_name,
+        '$last_name' => user.last_name,
+        '$phone' => user.phone,
+        '$organization_name' => user.organization&.name,
         '$last_seen' => user.current_sign_in_at,
         '$created' => user.created_at,
         'sign_in_count' => user.sign_in_count }
