@@ -26,6 +26,6 @@ class User < ApplicationRecord
   end
 
   def set_public_id
-    self.public_id ||= self.id
+    self.public_id ||= SecureRandom.uuid
   end
 end
