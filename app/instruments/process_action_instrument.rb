@@ -7,15 +7,17 @@ class ProcessActionInstrument
       return if payload[:request].path.starts_with?('/rails') # ignore rails internal requests
 
       user = event_user(payload)
+      name = event_name(payload)
+      properties = event_properties(payload)
       return unless user
 
       Rails.logger.tagged 'ProcessActionInstrument' do |log|
-        log.debug "event_name => #{event_name(payload)}"
-        log.debug "event_properties => #{event_properties(payload)}"
+        log.debug "event_name => #{name}"
+        log.debug "event_properties => #{properties}"
         log.debug "event_user => #{user.inspect}"
       end
 
-      Mixpanel.track(user, name, event_properties(payload), payload[:request].ip)
+      Mixpanel.track(user.public_id, name, properties, payload[:request].ip)
     end
 
     private
