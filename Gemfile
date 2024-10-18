@@ -62,6 +62,8 @@ group :test do
   gem 'byebug', platforms: %i[ mri mingw x64_mingw ]
 end
 
+gem 'mixpanel-ruby'
+
 gem 'devise'
 
 # LlamaBot
