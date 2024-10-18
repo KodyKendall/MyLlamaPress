@@ -23,7 +23,7 @@ class ProcessActionInstrument
 
       return unless Mixpanel.people_set_recent?(user)
 
-      Mixpanel.client.people_set(user.public_id, Mixpanel.expand_user_properties(user), ip, )
+      Mixpanel.client.people.set(user.public_id, Mixpanel.expand_user_properties(user), ip, )
       user.update_column(:mixpanel_profile_last_set_at, Time.current)
     end
 
