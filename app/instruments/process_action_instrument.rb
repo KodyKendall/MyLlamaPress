@@ -12,19 +12,21 @@ class ProcessActionInstrument
       return unless user
 
       Rails.logger.tagged 'ProcessActionInstrument' do |log|
-        log.debug "event_name => #{name}"
-        log.debug "event_properties => #{properties}"
-        log.debug "event_user => #{user.inspect}"
+        log.info "event_name => #{name}"
+        log.info "event_properties => #{properties}"
+        log.info "event_user => #{user.inspect}"
       end
 
       ip = payload[:request].ip || user.current_sign_in_ip || user.last_sign_in_ip
 
       Mixpanel.track(user.public_id, name, properties, ip)
+      Rails.logger.info "Tracked event #{name} for user #{user.email}"
 
       return unless Mixpanel.people_set_recent?(user)
 
       Mixpanel.client.people.set(user.public_id, Mixpanel.expand_user_properties(user), ip, '$ignore_time' => true)
       user.update_column(:mixpanel_profile_last_set_at, Time.current)
+      Rails.logger.info "Updated Mixpanel profile for user #{user.public_id}"
     end
 
     private
@@ -59,7 +61,6 @@ class ProcessActionInstrument
 
     def event_user(payload)
         warden = payload[:request].env['warden']
-    
         warden.user(:user) if warden.authenticated?(:user)
     end
 end
