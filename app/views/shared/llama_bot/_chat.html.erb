@@ -53,25 +53,28 @@
     class="absolute bottom-16 md:bottom-20 right-0 bg-gray-800 rounded-lg p-2 md:p-3 shadow-lg"
     data-llama="app/views/shared/_chat.html.erb"
   >
-    <p
-      class="text-white text-xs md:text-sm whitespace-nowrap"
-      data-llama="app/views/shared/_chat.html.erb"
-    >
-      What do you want to build?
-    </p>
-    <!-- Bubble tail -->
-    <div
-      class="absolute bottom-0 right-4 md:right-6 transform translate-y-1/2 rotate-45 w-2 h-2 md:w-3 md:h-3 bg-gray-800"
-      data-llama="app/views/shared/_chat.html.erb"
-    ></div>
+  <div role="status" class="hidden is-loading">
+    <svg aria-hidden="true" class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg> <span class="sr-only">Loading...</span>
+  </div>
+  <p
+    class="text-white text-xs md:text-sm whitespace-nowrap"
+    data-llama="app/views/shared/_chat.html.erb"
+  >
+    What do you want to build?
+  </p>
+  <!-- Bubble tail -->
+  <div
+    class="absolute bottom-0 right-4 md:right-6 transform translate-y-1/2 rotate-45 w-2 h-2 md:w-3 md:h-3 bg-gray-800"
+    data-llama="app/views/shared/_chat.html.erb"
+  ></div>
   </div>
 
   <!-- Chatbot window -->
   <div
     id="chatbotContainer"
-    class="hidden fixed border border-gray-300 rounded-lg overflow-hidden shadow-lg bg-white flex flex-col transition-all duration-300 ease-in-out"
+    class="hidden fixed border border-gray-300 rounded-lg overflow-hidden shadow-lg bg-white flex flex-col transition-all duration-300 ease-in-out text-gray-800"
     data-llama="app/views/shared/_chat.html.erb"
-    style="overflow: auto; min-width: 300px; min-height: 200px;  bottom: 85px; right: 15px; max-width: 97%; max-height: 85%;"
+    style="overflow: auto; min-width: 300px; min-height: 200px; bottom: 85px; right: 15px; max-width: 97%; max-height: 85%; z-index: 999;"
   >
     <div
       class="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-2 md:p-4 flex justify-between items-center rounded-t-2xl shadow-md"
@@ -236,21 +239,17 @@
       </div>
     </div>
 
-    <div id="promptsContainer" class="py-4 bg-gray-50 hidden">
+    <div id="promptsContainer" class="py-4 bg-gray-50">
       <div class="text-sm font-medium text-gray-600 mb-3 ml-4">Prompt Ideas:</div>
       <div class="overflow-x-auto">
         <div id="promptsList" class="inline-flex space-x-3 px-4"> 
-          <div class="prompt-bubble bg-white text-gray-700 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200" onclick="insertPrompt(this.textContent)">
+          <div data-llama-prompt="Improve this design 10x. Make it beautiful, modern, and use font awesome icons and aos animations." class="prompt-bubble bg-white text-gray-700 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200" onclick="insertPrompt(this.getAttribute('data-llama-prompt'))">
             💡 Improve design 10X
           </div>
-          <div class="prompt-bubble bg-orange-100 text-orange-800 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-orange-200" onclick="insertPrompt(this.textContent)">
-          <!--<picture>
-            <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f383/512.webp" type="image/webp">
-            <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f383/512.gif" alt="🎃" width="32" height="32">
-          </picture>-->
+          <div data-llama-prompt="Please add a cool fall animation overlay to this page with falling leaf and pumpkin emojis using css keyframe animations" class="prompt-bubble bg-orange-100 text-orange-800 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-orange-200" onclick="insertPrompt(this.getAttribute('data-llama-prompt'))">
             🎃 Add Halloween animation
           </div>
-          <div class="prompt-bubble bg-white text-gray-700 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200" onclick="insertPrompt(this.textContent)">
+          <div data-llama-prompt="Optimize this page for mobile devices with tailwind css. Ensure responsive design, improve load times, and enhance touch interactions." class="prompt-bubble bg-white text-gray-700 text-xs rounded-full px-4 py-2 cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200" onclick="insertPrompt(this.getAttribute('data-llama-prompt'))">
             Optimize for mobile
           </div>
         </div>
@@ -267,7 +266,7 @@
       >
         <button
           onclick="toggleSelectionMode()"
-          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200"
+          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200 flex flex-col items-center"
           title="Select element"
           data-llama="app/views/shared/_chat.html.erb"
         >
@@ -287,10 +286,11 @@
               data-llama="app/views/shared/_chat.html.erb"
             />
           </svg>
+          <span class="text-xs mt-1 text-gray-600">Select</span>
         </button>
         <button
           id="toggleImagesForUserToSelect"
-          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200"
+          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200 flex flex-col items-center"
           title="Insert image"
           data-llama="app/views/shared/_chat.html.erb"
         >
@@ -310,10 +310,11 @@
               data-llama="app/views/shared/_chat.html.erb"
             />
           </svg>
+          <span class="text-xs mt-1 text-gray-600">Image</span>
         </button>
         <button
           id="toggleCodeSnippets"
-          class="p-2 hover:bg-gray-200 rounded-full transition-colors duration-200"
+          class="p-2 hover:bg-gray-200 rounded-full transition-colors duration-200 flex flex-col items-center"
           title="Show code snippets"
           data-llama="app/views/shared/_chat.html.erb"
         >
@@ -333,7 +334,30 @@
               data-llama="app/views/shared/_chat.html.erb"
             />
           </svg>
+          <span class="text-xs mt-1 text-gray-600">Snippets</span>
         </button>
+        <button
+          id="togglePrompts"
+          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200 flex flex-col items-center"
+          title="Toggle prompt suggestions"
+          onclick="togglePromptsContainer()"
+          data-llama="app/views/shared/_chat.html.erb">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+            />
+          </svg>
+          <span class="text-xs mt-1 text-gray-600">Prompts</span>
+        </button>        
         <div
           id="selectedElementContainer"
           class="flex-grow rounded-md mx-2 p-2 flex items-center justify-center hidden relative"
@@ -370,28 +394,6 @@
             data-llama="app/views/shared/_chat.html.erb"
           ></div>
         </div>
-        <button
-          id="togglePrompts"
-          class="mr-2 p-2 hover:bg-gray-200 rounded-full transition-colors duration-200"
-          title="Toggle prompt suggestions"
-          onclick="togglePromptsContainer()"
-          data-llama="app/views/shared/_chat.html.erb"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-            />
-          </svg>
-        </button>
       </div>
 
       <!-- New div for code snippets -->
@@ -452,13 +454,27 @@
           rows="2 md:rows-3"
           data-llama="app/views/shared/_chat.html.erb"
         ></textarea>
-        <button
-          id="sendButton"
-          class="bg-blue-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50 self-end text-sm md:text-base"
-          data-llama="app/views/shared/_chat.html.erb"
-        >
-          Send
-        </button>
+        <div class="flex items-center justify-end">
+          <div id="loadingIndicator" class="hidden mr-2 is-loading">
+            <div class="grid grid-cols-[40px_auto] gap-4 items-center w-full">
+              <div class="grid min-h-[20px] w-full place-items-center overflow-hidden rounded-lg p-6">
+                <svg class="text-gray-300 animate-spin" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                  <path d="M32 3C35.8083 3 39.5794 3.75011 43.0978 5.20749C46.6163 6.66488 49.8132 8.80101 52.5061 11.4939C55.199 14.1868 57.3351 17.3837 58.7925 20.9022C60.2499 24.4206 61 28.1917 61 32C61 35.8083 60.2499 39.5794 58.7925 43.0978C57.3351 46.6163 55.199 49.8132 52.5061 52.5061C49.8132 55.199 46.6163 57.3351 43.0978 58.7925C39.5794 60.2499 35.8083 61 32 61C28.1917 61 24.4206 60.2499 20.9022 58.7925C17.3837 57.3351 14.1868 55.199 11.4939 52.5061C8.801 49.8132 6.66487 46.6163 5.20749 43.0978C3.7501 39.5794 3 35.8083 3 32C3 28.1917 3.75011 24.4206 5.2075 20.9022C6.66489 17.3837 8.80101 14.1868 11.4939 11.4939C14.1868 8.80099 17.3838 6.66487 20.9022 5.20749C24.4206 3.7501 28.1917 3 32 3L32 3Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M32 3C36.5778 3 41.0906 4.08374 45.1692 6.16256C49.2477 8.24138 52.7762 11.2562 55.466 14.9605C58.1558 18.6647 59.9304 22.9531 60.6448 27.4748C61.3591 31.9965 60.9928 36.6232 59.5759 40.9762" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+                  </path>
+                </svg>
+              </div>
+              <span class="thinking-pulse">Thinking... (this may take a while)</span>
+            </div>
+          </div>
+          <button
+            id="sendButton"
+            class="bg-blue-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50 text-sm md:text-base"
+            data-llama="app/views/shared/_chat.html.erb"
+          >
+            Send
+          </button>
+        </div>
         <!--TODO: add animation when user presses send while it's waiting for a response. -->
         <!--<dotlottie-player src="https://lottie.host/9f9cd2dd-4a84-4fa0-904a-4f7d72cae241/XM6ZklRzAZ.json" background="transparent" speed="1" style="width: 50px;" loop autoplay></dotlottie-player>-->
       </div>
@@ -484,4 +500,3 @@
   <%= render partial: 'shared/llama_bot/toolbar' %> 
   <%= render partial: 'shared/llama_bot/context_menu' %> 
 <% end %>
-

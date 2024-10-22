@@ -45,7 +45,7 @@
       const spinner = document.createElement("div");
       spinner.innerHTML = `
         <div class="grid grid-cols-[40px_auto] gap-4 items-center w-full">
-        <div class="grid min-h-[20px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
+            <div class="grid min-h-[20px] w-full place-items-center overflow-hidden rounded-lg p-6">
         <svg class="text-gray-300 animate-spin" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
             width="24" height="24">
             <path
@@ -126,14 +126,24 @@
     }
 
     function showLoadingIndicator() {
+      // show all instances of is-loading class
+      document.querySelectorAll(".is-loading").forEach(element => {
+        element.classList.remove("hidden");
+      });
       const spinner = makeLoadingSpinner();
       const loadingDiv = document.createElement("div");
       loadingDiv.id = "loadingIndicator";
+      loadingDiv.classList.add("is-loading");
       loadingDiv.appendChild(spinner);
       chatbotMessages.appendChild(loadingDiv);
     }
 
     function hideLoadingIndicator() {
+      // hide all instances of is-loading class
+      document.querySelectorAll(".is-loading").forEach(element => {
+        element.classList.add("hidden");
+      });
+
       const loadingDiv = document.getElementById("loadingIndicator");
       if (loadingDiv) {
         loadingDiv.remove();
@@ -201,6 +211,13 @@
     //make global access to toggle prompts container
     window.togglePromptsContainer = togglePromptsContainer;
 
+    function insertPrompt(prompt) {
+      userInput.value = prompt;
+      sendMessage();
+    }
+    //make global access to insert prompt
+    window.insertPrompt = insertPrompt;
+
     /**
      * Hides all chat tool windows.
      */
@@ -238,7 +255,6 @@
     function loadChatHistory() {
       let webPageId = "<%=@page&.id%>";
       if (webPageId) {
-        //TODO: fetch Chat History from /web_page_histories IF this web_page_id is present in the URL
         fetch(`/pages/${webPageId}/histories.json`)
           .then((response) => {
             if (!response.ok) {
@@ -248,9 +264,21 @@
           })
           .then((data) => {
             web_page_histories = data.web_page_histories;
-            web_page_histories.forEach((history) => {
+            // Reverse the order of operations
+            web_page_histories.forEach((history) => { //
               addWebPageHistoryToHistoryDrawer(history);
             });
+
+            //TODO: put chat history here to view history easier
+            //web_page_histories.reverse(); 
+            //web_page_histories.forEach((history) => {
+            //  addMessage(history.user_message, "user");
+            //});
+
+            addMessage("What do you want to build?", "bot");
+            //scroll to bottom of chatbot
+            const chatbotMessages = document.getElementById('chatbotMessages');
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
           });
       }
     }
@@ -355,7 +383,6 @@
 
     // Initial bot message
     loadChatHistory();
-    addMessage("What do you want to build?", "bot");
 
     const textarea = document.getElementById('userInput');
     const maxRows = 10; // Set this to your desired maximum number of rows
