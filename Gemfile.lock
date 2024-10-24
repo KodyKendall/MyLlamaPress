@@ -1,8 +1,8 @@
 PATH
-  remote: llama_in_word_press
+  remote: vendor/engines/llama_in_word_press
   specs:
     llama_in_word_press (0.1.0)
-      rails (>= 7.2.1)
+      rails (>= 7.0.0)
 
 GEM
   remote: https://rubygems.org/
