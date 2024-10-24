@@ -73,4 +73,3 @@ gem 'diffy'
 gem "aws-sdk-s3"
 
 gem 'twilio-ruby'
-gem 'llama_in_word_press', path: 'vendor/engines/llama_in_word_press'
