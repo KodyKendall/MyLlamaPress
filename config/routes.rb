@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   end
   resources :sites
   resources :page_histories
-  devise_for :users, controllers: { registrations: 'users/registrations' }
+  devise_for :users, controllers: { registrations: 'users/registrations', sessions: 'users/sessions' }
   resources :users
   resources :organizations
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
