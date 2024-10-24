@@ -1,5 +1,5 @@
 class Users::SessionsController < Devise::SessionsController
-    skip_before_action :verify_authenticity_token, if: :json_request? #doing this because it's easier as a one time thing for api authentication and it's an MVP, and it's not part of the public repo
+    skip_before_action :verify_authenticity_token, if: :json_request? #Doing this because it's easier as a one time thing for api authentication and it's an MVP, and it's not part of the public repo.
   
     # POST /resource/sign_in
     def create
