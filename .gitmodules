@@ -1,3 +1,0 @@
-[submodule "vendor/engines/wordpress_integration"]
-	path = vendor/engines/wordpress_integration
-	url = git@github.com:llamapressai/WordpressIntegration.git
