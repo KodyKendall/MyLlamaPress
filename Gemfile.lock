@@ -1,9 +1,3 @@
-PATH
-  remote: vendor/engines/llama_in_word_press
-  specs:
-    llama_in_word_press (0.1.0)
-      rails (>= 7.0.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -381,7 +375,6 @@ DEPENDENCIES
   friendly_id
   importmap-rails
   jbuilder
-  llama_in_word_press!
   mocha
   pg (= 1.5.7)
   puma (>= 5.0)
