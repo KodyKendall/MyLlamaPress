@@ -22,7 +22,7 @@
     <%= form.submit "Save", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
     <button type="button" id="reset-content" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Reset Content</button>
     <button type="button" id="preview-content" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Preview</button>
-    <% if page.site.wordpress_api_encoded_token&.present? %>
+    <% if page&.site&.wordpress_api_encoded_token&.present? %>
       <button type="button" id="publish-content" data-page-id="<%=page.id%>" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Publish to WordPress</button>
     <% end %>
   </div>
