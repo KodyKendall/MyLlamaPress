@@ -176,6 +176,12 @@ class PagesController < ApplicationController
     end
   end
 
+  def publish_to_wordpress
+    @page = current_organization.pages.find(params[:id])
+    @page.publish_to_wordpress!
+    render json: { message: "web page was successfully published to WordPress." }
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_page

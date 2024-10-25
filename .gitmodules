@@ -1,0 +1,3 @@
+[submodule "vendor/engines/llama_in_word_press"]
+	path = vendor/engines/llama_in_word_press
+	url = git@github.com:llamapressai/LlamaInWordPress.git

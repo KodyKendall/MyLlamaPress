@@ -177,6 +177,10 @@ class Page < ApplicationRecord
     end
   end
 
+  def publish_to_wordpress!
+    Wordpress.create_page!(site.wordpress_api_decoded_token, self)
+  end
+
   private
 
   # Create a new web site for the organization

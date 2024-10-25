@@ -22,6 +22,9 @@
     <%= form.submit "Save", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
     <button type="button" id="reset-content" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Reset Content</button>
     <button type="button" id="preview-content" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Preview</button>
+    <% if page.site.wordpress_api_encoded_token&.present? %>
+      <button type="button" id="publish-content" data-page-id="<%=page.id%>" class="rounded-lg py-3 px-5 bg-gray-600 text-white inline-block font-medium cursor-pointer ml-2">Publish to WordPress</button>
+    <% end %>
   </div>
 
   <div id="preview-container" class="my-5 hidden">
@@ -57,6 +60,38 @@
         // Trigger form submission
         document.querySelector('form').submit();
       });
+
+      // Add WordPress publish functionality
+      const publishButton = document.getElementById('publish-content');
+      if (publishButton) {
+        publishButton.addEventListener('click', async function() {
+          //const pageId = '<%= page.id %>';
+          const pageId = publishButton.getAttribute('data-page-id');
+          try {
+            publishButton.disabled = true;
+            publishButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publishing...';
+            
+            const response = await fetch(`/pages/${pageId}/publish_to_wordpress.json`, {
+              method: 'POST',
+              headers: {
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            if (!response.ok) throw new Error('Publishing failed');
+
+            const data = await response.json();
+            showNotification('Successfully published to WordPress!', 'success');
+          } catch (error) {
+            console.error('Publishing error:', error);
+            showNotification('Failed to publish to WordPress. Please try again.', 'error');
+          } finally {
+            publishButton.disabled = false;
+            publishButton.innerHTML = 'Publish to WordPress';
+          }
+        });
+      }
     });
   </script>
 
@@ -320,5 +355,6 @@
 
 
 </script>
+
 
 

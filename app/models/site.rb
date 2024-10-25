@@ -17,4 +17,8 @@ class Site < ApplicationRecord
       url: image.service.send(:object_for, image.key).public_url
     }
   end
+
+  def wordpress_api_decoded_token
+    Base64.decode64(wordpress_api_encoded_token) if wordpress_api_encoded_token.present?
+  end
 end
