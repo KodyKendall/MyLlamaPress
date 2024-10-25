@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     member do
       get 'histories'
       post 'restore'
+      post 'publish_to_wordpress'
     end
   end
   resources :sites
