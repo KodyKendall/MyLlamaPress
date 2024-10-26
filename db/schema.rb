@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_24_231531) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_26_213636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -105,6 +105,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_24_231531) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "wordpress_api_encoded_token"
+    t.bigint "home_page_id"
+    t.index ["home_page_id"], name: "index_sites_on_home_page_id"
     t.index ["organization_id"], name: "index_sites_on_organization_id"
     t.index ["slug"], name: "index_sites_on_slug", unique: true
   end
@@ -163,6 +165,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_24_231531) do
   add_foreign_key "posts", "pages"
   add_foreign_key "posts", "users"
   add_foreign_key "sites", "organizations"
+  add_foreign_key "sites", "pages", column: "home_page_id"
   add_foreign_key "snippets", "sites"
   add_foreign_key "submissions", "sites"
   add_foreign_key "users", "organizations"
