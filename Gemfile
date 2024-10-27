@@ -75,3 +75,5 @@ gem 'diffy'
 gem "aws-sdk-s3"
 
 gem 'twilio-ruby'
+
+gem 'kaminari'
