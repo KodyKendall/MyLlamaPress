@@ -7,42 +7,39 @@ class PagesController < ApplicationController
 
   # GET /
   # Find and render the root page depending on the domain.
-  # If no root page is found, redirect to the llama press home page.
+  # If no root page is found, redirect to the llama press home
   def home
     #If the user is signed in, and they have a default site, redirect to that site's home page.
     #If no user, no site, no page, no domain.
-    if current_site.present? #current_site is set in application_controller.rb, based on domain that's requesting.
-      puts 'site is present'
-      @page = current_site.home_page || current_site.pages.first # try to get home page if it's set, otherwise just get the first page.
-
-      if @page.nil?
-        puts 'no page in site'
-        redirect_to llama_bot_home_path and return
-      elsif current_user.present?
-        redirect_to "/pages/#{@page.id}" and return
-      else
-        #pass through and render everything
-      end
-    else # if no site is found for this domain, go to the default home page. 
-      if current_user.present?
-        puts 'user is present'
-        if current_user.organization.pages.count == 0
-          puts 'no pages in organization'
+    # Found a signed in user -- let's take them to their home page.
+    if current_user.present?#current_site.present? && current_site.slug != 'llamapress.ai' #current_site is set in application_controller.rb, based on domain that's requesting.
+      Rails.logger.info "Current User Found! #{current_user.email}"
+      redirect_to llama_bot_home_path and return
+    else # if it's a non-signed in user, check the domain and serve them the home page for that domain.
+      Rails.logger.info "Non-User came to website #{request.domain} with route #{request.path}. Checking to see if we have a site that matches this domain now. Checking if we have a site with this domain already..."
+      Rails.logger.info "Site that was matched: #{current_site&.slug}" # this gets set in application_controller.rb
+      
+      # They came to a domain that has a site associated with it. (Excluding llamapress.ai)
+      if current_site.present? && current_site.slug != ENV["HOSTED_DOMAIN"]
+        Rails.logger.info "Found site #{current_site.slug} for domain #{request.domain}. Taking them to the home page for this site now"
+        @page = current_site.home_page || current_site.pages.first # try to get home page if it's set, otherwise just get the first page.
+        if @page.nil?
+          Rails.logger.info 'no page in site, taking them to llamapress home page'
           redirect_to llama_bot_home_path and return
-        else 
-          puts 'pages in organization'
-          @page = current_user.organization.pages.first
-          redirect_to "/pages/#{@page.id}" and return
+        else
+          #pass through and render everything for a public visitor to this site.
         end
-      else
-        puts 'no user'
-        redirect_to new_user_registration_path and return 
       end
     end
 
-    puts 'rendering page to a non-signed in user -- this is likely a public traffic visit going to a site\'s home page'
+    if current_site.nil? || @page.nil? #what should we do if current_site is nil, and there's no page?
+      Rails.logger.info 'no site found, taking them to llamapress home page'
+      redirect_to "/users/sign_up" and return
+    end
+
+    Rails.logger.info 'rendering page to a non-signed in user -- this is likely a public traffic visit going to a site\'s home page'
     content = @page.render_content # we know @page is present, because we redirected above if it wasn't.
-    content += inject_chat_partial(content) if current_user.present?
+    #content += inject_chat_partial(content) if current_user.present?
     content += inject_style()
     content += inject_analytics_partial() if Rails.env.production?
     render inline: content.html_safe, layout: 'page'
@@ -77,10 +74,11 @@ class PagesController < ApplicationController
   # GET /pages/1 or /pages/1.json
   def show
     content = @page.render_content
-
-    # Inject the chat partial
-    content += inject_chat_partial(content) if current_user.present?
-    content += inject_analytics_partial() if Rails.env.production?
+    if current_user.present? && @page.organization_id == current_user.organization_id
+      # Inject the chat partial
+      content += inject_chat_partial(content)
+      content += inject_analytics_partial() if Rails.env.production?
+    end
     render inline: content.html_safe, layout: 'page'
   end
 
@@ -197,13 +195,16 @@ class PagesController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_page
       @page = Page.friendly.find(params[:id]) || Page.find(params[:id])
+      # @page = current_user.organization.pages.friendly.find(params[:id]) || Page.find(params[:id])
     end
 
     def set_site
       if page_params[:site_id].present?
         @site = Site.find(params[:site_id])
+        # @site = current_user.sites.find(params[:site_id])
       else
         @site = current_site || @page.site || current_organization.sites.first
+        # @site = current_site || @page.site || current_user.sites.first
       end
     end
 

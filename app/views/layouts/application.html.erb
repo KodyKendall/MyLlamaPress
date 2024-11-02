@@ -66,6 +66,7 @@
           })(window, document, "clarity", "script", "<%= ENV['CLARITY_TRACKING_ID'] %>");
       </script>
     <% end %>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="flex flex-col min-h-screen" data-llama="app/views/layouts/llama_bot.html.erb">
   <nav class="bg-gray-800 p-4" data-llama="app/views/layouts/llama_bot.html.erb">
@@ -89,12 +90,30 @@
           <a href="/llama_bot/models" class="text-white hover:text-gray-300" title="Activated Features" data-llama="app/views/layouts/llama_bot.html.erb">
             <i class="fas fa-puzzle-piece" data-llama="app/views/layouts/llama_bot.html.erb"></i>
           </a>
-          <a href="/llama_bot/database" class="text-white hover:text-gray-300" title="Show Database" data-llama="app/views/layouts/llama_bot.html.erb">
-            <i class="fas fa-database" data-llama="app/views/layouts/llama_bot.html.erb"></i>
+          <a href="/llama_bot/database" class="text-white hover:text-gray-300" title="Show Database">
+            <i class="fas fa-database"></i>
           </a>
-          <%= link_to user_path(current_user), class: "text-white hover:text-gray-300", title: "View Profile" do %>
-            <i class="fas fa-user"></i>
-          <% end %>
+          <%= render partial: 'shared/llama_bot/user_menu' %>
+          <!-- Add more navbar links here -->
+        </div>
+        <div class="md:hidden">
+          <button id="menu-toggle" class="text-white focus:outline-none">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+          </button>
+        </div>
+        <% else %>
+        <div class="hidden md:flex items-center space-x-4">
+           <a href="/pricing" class="text-white hover:text-gray-300" title="Pricing">
+            <i class="fas fa-tags"></i>
+          </a>
+          <a href="/how-it-works" class="text-white hover:text-gray-300" title="How It Works">
+            <i class="fas fa-question-circle"></i>
+          </a>
+          <a href="https://discord.gg/7DapkvmWKZ" target="_blank" class="text-white hover:text-gray-300" title="Join Discord">
+            <i class="fab fa-discord"></i>
+          </a>
           <!-- Add more navbar links here -->
         </div>
         <div class="md:hidden">
@@ -152,6 +171,17 @@
 
       menuToggle.addEventListener('click', function() {
         mobileMenu.classList.toggle('hidden');
+      });
+    });
+  </script>
+
+  <script>
+    // This allows the user to change the default site from the top right user menu.
+    document.addEventListener('DOMContentLoaded', function() {
+      const defaultSiteForm = document.querySelector('.default-site-form');
+      const defaultSiteSelect = defaultSiteForm.querySelector('select');
+      defaultSiteSelect.addEventListener('change', function() {
+        defaultSiteForm.submit();
       });
     });
   </script>
