@@ -24,7 +24,7 @@ class Site < ApplicationRecord
   def wordpress_api_decoded_token
     Base64.decode64(wordpress_api_encoded_token) if wordpress_api_encoded_token.present?
   end
-
+  
   def make_unique_slug
     original_slug = self.slug
     counter = 1
