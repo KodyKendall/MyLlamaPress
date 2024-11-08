@@ -1,0 +1,205 @@
+<!-- Add these in the header section, after the existing script and style tags -->
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
+
+<% if current_user.tutorial_step == -10 %>
+<%# disable tutorial for now, while we deploy. %>
+<script data-llama="exclude_when_saving_contenteditable_edits">
+  var globalTutorialStep = '<%= current_user.tutorial_step %>'; //global variable to track the tutorial step
+  globalTutorialStep = parseInt(globalTutorialStep);
+  
+  var doThisTour = true;
+
+  if (globalTutorialStep == null || globalTutorialStep != 0) {
+       doThisTour = false;
+  }
+
+  if (doThisTour){
+    console.log("Loading llama tutorial! Step 0");
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const tour = new Shepherd.Tour({
+      useModalOverlay: true,
+      defaultStepOptions: {
+        classes: 'shadow-md bg-purple-dark',
+        scrollTo: true,
+        cancelIcon: {
+          enabled: true
+        }
+      }
+    });
+
+    tour.addStep({
+      id: 'welcome',
+      text: 'Welcome to LlamaPress! Let me show you around',
+      buttons: [
+        {
+          text: 'Next',
+          action: tour.next
+        }
+      ]
+    });
+
+    tour.addStep({
+      id: 'chat-icon',
+      attachTo: {
+        element: '#chatIcon',
+        on: 'bottom'
+      },
+      text: 'Click this icon anytime to open the chat window',
+      buttons: [
+        {
+          text: 'Back',
+          action: tour.back
+        },
+        {
+          text: 'Next',
+          action: () => { //wrapped in a closure so we need to call getIsOpen() function to get the value of calling isOpen directly. 
+            if (!getIsOpen()){ // we don't want to toggle chat if it's already open
+              toggleChat();
+              document.getElementById('userInput').value = 'Redesign this page so its in nightmode';
+            }
+            tour.next();
+          }
+        }
+      ]
+    });
+
+    tour.addStep({
+      id: 'chat-input',
+      attachTo: {
+        element: '#userInput',
+        on: 'top'
+      },
+      text: 'Type & send messages to change anything about the page',
+      buttons: [
+        {
+          text: 'Back',
+          action: tour.back
+        },
+        {
+          text: 'Next',
+          action: () => {
+            //document.getElementById('userInput').value = 'Redesign this page so its in nightmode';
+            
+            //we need the next and send button to do the same thing on that step.
+            document.getElementById('sendButton').addEventListener('click', () => {
+              console.log("User clicked send button from tutorial!")
+              tour.show('wait-for-thinking');//wrap tour.next in a closure so it gets called on next step if the user chooses to press send instead of next button
+              
+              // set the tutorial step to 1 to move on to the next step of the tutorial
+              fetch('/users/set_tutorial_step', {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  // Include CSRF token if your Rails app requires it
+                  'X-CSRF-Token': document.querySelector('[name="csrf-token"]')?.content
+                },
+                body: JSON.stringify({ tutorial_step: 1 })
+              });
+//              tour.complete();//complete tour to fire the onComplete event and update the server that we're done with this part of tutoriald
+            });
+
+            tour.next();
+          }
+        }
+      ]
+    });
+    
+    tour.addStep({
+      id: 'send-button',
+      attachTo: {
+        element: '#sendButton',
+        on: 'bottom'
+      },
+      text: 'Send this message to change page to nightmode',
+      buttons: [
+        {
+          text: 'Back',
+          action: tour.back
+        },
+        {
+          text: 'Next',
+          action: () => {
+            tour.next();
+            document.getElementById('sendButton').click(); //trigger send message if the user clicks next button
+        
+            fetch('/users/set_tutorial_step', { //complete tour to fire the onComplete event and update the server that we're done with this part of tutorial
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                // Include CSRF token if your Rails app requires it
+                'X-CSRF-Token': document.querySelector('[name="csrf-token"]')?.content
+              },
+              body: JSON.stringify({ tutorial_step: 1 })
+            });
+            
+          }
+        }
+      ]
+    });
+
+    tour.addStep({
+      id: 'wait-for-thinking',
+      text: 'Wait for LlamaBot to implement your changes... (this one shouldn\'t take long)',
+      cancelIcon: {
+        enabled: false
+      },
+      canClickTarget: false,
+      buttons: [
+        {
+          text: 'Back',
+          classes: 'shepherd-button-waiting',
+          disabled: true,
+          action: tour.back
+        },
+        {
+          text: 'Next',
+          classes: 'shepherd-button-waiting',
+          disabled: true,
+          action: tour.next
+        }
+      ]
+    });
+
+
+    //TODO: This isn't doing anything right now because we're not firing a llamaBotResponseReceived event
+    // Add event listener for when LlamaBot finishes processing
+    document.addEventListener('llamaBotResponseReceived', function() {
+      const waitingStep = tour.steps.find(step => step.id === 'wait-for-thinking');
+      if (waitingStep) {
+        waitingStep.options.buttons.forEach(button => {
+          button.disabled = false;
+          button.classes = button.classes.replace('shepherd-button-waiting', '');
+        });
+        // Force update the step to reflect the button changes
+        tour.show('wait-for-thinking');
+      }
+    });
+
+    if (doThisTour) {
+      setTimeout(() => {
+        tour.start();
+        tourStarted = true;
+      }, 500);
+    }
+
+
+    //TODO: This isn't doing anything right now because we're manually doing this in the right step completion in the tutorial.
+    // Move tutorial step forward when the tour is completed.
+    tour.on('complete', () => {
+      //TODO: do a PUT to /users/set_tutorial_step with tutorial_step = 1 (increment to next step in the tutorial)
+      fetch('/users/set_tutorial_step', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include CSRF token if your Rails app requires it
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]')?.content
+        },
+        body: JSON.stringify({ tutorial_step: 1 })
+      });
+    });
+  });
+</script>
+<% end %>
