@@ -164,12 +164,24 @@
   </div>
 
 </div>
+
+<%# WARNING! The load order matters here. Global variables are set at different points in the Javascript. %>
+
 <%= render partial: 'shared/llama_bot/css' %>
 <%= render partial: 'shared/llama_bot/history_modal' %>
 <%= render partial: 'shared/llama_bot/side_panel' %>
 <%= render partial: 'shared/llama_bot/chat_javascript' %>
+<%= render partial: 'shared/llama_bot/websocket' %>
 <% if current_user.present? && controller_name == 'pages' && action_name == 'show' %> 
   <%= render partial: 'shared/llama_bot/javascript/contenteditable_javascript' %> 
   <%= render partial: 'shared/llama_bot/floating_toolbar' %> 
   <%= render partial: 'shared/llama_bot/context_menu' %> 
+<% end %>
+
+<% if current_user.present? && current_user.needs_tutorial? %> <%# This is just for the _chat.html.erb partial, there are other tutorials that are used for /pages/new, /home, /pages/:id/edit, and /3rd-party-recommendations%>
+  <%= render partial: 'shared/llama_bot/javascript/tutorials/tutorial_step_0_llama_bot' %>
+  <%= render partial: 'shared/llama_bot/javascript/tutorials/tutorial_step_1_llama_bot' %>
+  <%= render partial: 'shared/llama_bot/javascript/tutorials/tutorial_step_2_llama_bot' %>
+  <%= render partial: 'shared/llama_bot/javascript/tutorials/tutorial_step_4_llama_bot' %>
+
 <% end %>

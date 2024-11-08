@@ -11,6 +11,7 @@ when it's included in an iframe on other pages, such as in chat history, or when
 <%= render partial: 'shared/llama_bot/javascript/images' %>
 
 <script data-llama="exclude_when_saving_contenteditable_edits">
+
 document.addEventListener('DOMContentLoaded', function () {
     const element = document.getElementById('chatbotContainer');
     const resizers = document.querySelectorAll('#chatbotContainer .resizer');
