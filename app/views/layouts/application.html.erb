@@ -66,6 +66,7 @@
           })(window, document, "clarity", "script", "<%= ENV['CLARITY_TRACKING_ID'] %>");
       </script>
     <% end %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="flex flex-col min-h-screen" data-llama="app/views/layouts/llama_bot.html.erb">
@@ -81,7 +82,7 @@
           <a href="/home" class="text-white hover:text-gray-300" title="Home" data-llama="app/views/layouts/llama_bot.html.erb">
             <i class="fas fa-home" data-llama="app/views/layouts/llama_bot.html.erb"></i>
           </a>
-          <a href="/pages" class="text-white hover:text-gray-300" title="Webpages" data-llama="app/views/layouts/llama_bot.html.erb">
+<!--          <a href="/pages" class="text-white hover:text-gray-300" title="Webpages" data-llama="app/views/layouts/llama_bot.html.erb">
             <i class="fas fa-file-alt" data-llama="app/views/layouts/llama_bot.html.erb"></i>
           </a>
           <a href="/llama_bot/source" class="text-white hover:text-gray-300" title="Source Code" data-llama="app/views/layouts/llama_bot.html.erb">
@@ -92,7 +93,7 @@
           </a>
           <a href="/llama_bot/database" class="text-white hover:text-gray-300" title="Show Database">
             <i class="fas fa-database"></i>
-          </a>
+          </a>-->
           <%= render partial: 'shared/llama_bot/user_menu' %>
           <!-- Add more navbar links here -->
         </div>
@@ -155,14 +156,15 @@
   </main>
 
   <% if current_user %>
-    <%= render partial: 'shared/llama_bot/chat' %>
+    <%= render partial: 'shared/llama_bot/side_panel'%>
+    <%# render partial: 'shared/llama_bot/chat' %>
   <% end %>
-<footer class="footer-banner mt-auto" data-llama="app/views/layouts/llama_bot.html.erb">
+<!--<footer class="footer-banner mt-auto" data-llama="app/views/layouts/llama_bot.html.erb">
         <div class="container mx-auto text-center" data-llama="app/views/layouts/llama_bot.html.erb">
             <span class="footer-text" data-llama="app/views/layouts/llama_bot.html.erb">Built with LlamaPress</span>
             <img src="https://service-jobs-images.s3.us-east-2.amazonaws.com/7rl98t1weu387r43il97h6ipk1l7" alt="LlamaPress Logo" class="inline-block mt-2 h-14" data-llama="app/views/layouts/llama_bot.html.erb">
         </div>
-    </footer>
+    </footer>-->
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {

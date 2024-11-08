@@ -12,7 +12,11 @@ Rails.application.routes.draw do
   resources :sites
   resources :page_histories
   devise_for :users, controllers: { registrations: 'users/registrations', sessions: 'users/sessions' }
-  resources :users
+  
+  resources :users do
+    put 'set_tutorial_step', on: :collection
+  end
+
   resources :organizations
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -53,4 +57,5 @@ Rails.application.routes.draw do
   get '*path', to: 'pages#resolve_slug', constraints: lambda { |request|
     !request.path.start_with?('/rails/') && !request.path.start_with?('/cable')
   }
+  mount ActionCable.server => '/cable'
 end
