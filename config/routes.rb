@@ -12,7 +12,11 @@ Rails.application.routes.draw do
   resources :sites
   resources :page_histories
   devise_for :users, controllers: { registrations: 'users/registrations', sessions: 'users/sessions' }
-  resources :users
+  
+  resources :users do
+    put 'set_tutorial_step', on: :collection
+  end
+
   resources :organizations
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -48,9 +52,15 @@ Rails.application.routes.draw do
 
   post 'sites/pre_signed_s3_url_for_uploading_images', to: 'sites#get_signed_s3_url_for_uploading_images'
   post '/sites/list_images', to: 'sites#list_images'
- 
+
+  mount ActionCable.server => '/cable'
+
+  get 'sitemap.xml', to: 'pages#sitemap_xml', defaults: { format: 'xml' }
+  get 'robots.txt', to: 'pages#robots_txt', defaults: { format: 'txt' }
+
   # Catch-all route at the end
   get '*path', to: 'pages#resolve_slug', constraints: lambda { |request|
     !request.path.start_with?('/rails/') && !request.path.start_with?('/cable')
   }
+
 end

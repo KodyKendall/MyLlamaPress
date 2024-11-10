@@ -62,6 +62,8 @@ group :test do
   gem 'byebug', platforms: %i[ mri mingw x64_mingw ]
 end
 
+gem 'mixpanel-ruby'
+
 gem 'devise'
 
 # LlamaBot
@@ -73,5 +75,12 @@ gem 'diffy'
 gem "aws-sdk-s3"
 
 gem 'twilio-ruby'
-
+gem 'websocket-client-simple'
+gem 'eventmachine'
+gem 'websocket-eventmachine-client'
+gem 'faye-websocket'
+gem 'async'
+gem 'async-websocket'
+gem 'async-http'
 gem 'kaminari'
+gem 'async-io'

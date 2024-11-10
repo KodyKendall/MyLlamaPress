@@ -1,4 +1,5 @@
 require 'diffy'
+require 'builder'
 
 class PagesController < ApplicationController
   before_action :set_page, only: %i[ show edit update destroy restore preview]
@@ -12,9 +13,13 @@ class PagesController < ApplicationController
     #If the user is signed in, and they have a default site, redirect to that site's home page.
     #If no user, no site, no page, no domain.
     # Found a signed in user -- let's take them to their home page.
-    if current_user.present?#current_site.present? && current_site.slug != 'llamapress.ai' #current_site is set in application_controller.rb, based on domain that's requesting.
+    if current_user.present? #current_site.present? && current_site.slug != 'llamapress.ai' #current_site is set in application_controller.rb, based on domain that's requesting.
       Rails.logger.info "Current User Found! #{current_user.email}"
-      redirect_to llama_bot_home_path and return
+      if current_user.needs_tutorial? # routing for the tutorial steps depending on what step they're on.
+        redirect_to current_user.tutorial_step_path and return
+      else 
+        redirect_to llama_bot_home_path and return
+      end
     else # if it's a non-signed in user, check the domain and serve them the home page for that domain.
       Rails.logger.info "Non-User came to website #{request.domain} with route #{request.path}. Checking to see if we have a site that matches this domain now. Checking if we have a site with this domain already..."
       Rails.logger.info "Site that was matched: #{current_site&.slug}" # this gets set in application_controller.rb
@@ -189,6 +194,58 @@ class PagesController < ApplicationController
     @page = current_organization.pages.find(params[:id])
     @page.publish_to_wordpress!
     render json: { message: "web page was successfully published to WordPress." }
+  end
+  
+  def sitemap_xml
+    @pages = current_site.pages
+    
+    # Build XML using Builder
+    xml = Builder::XmlMarkup.new(indent: 2)
+    xml.instruct!
+
+    # Create urlset with necessary namespaces
+    xml.urlset(
+      'xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9',
+      'xmlns:image' => 'http://www.google.com/schemas/sitemap-image/1.1',
+      'xmlns:news' => 'http://www.google.com/schemas/sitemap-news/0.9',
+      'xmlns:video' => 'http://www.google.com/schemas/sitemap-video/1.1'
+    ) do
+      # Add home page as highest priority
+      xml.url do
+        xml.loc("https://" + current_site.slug)
+        xml.lastmod(Time.current.strftime('%Y-%m-%d'))
+        xml.changefreq('daily')
+        xml.priority(1.0)
+      end
+
+      # Add each page
+      @pages.each do |page|
+        xml.url do
+          xml.loc("https://" + current_site.slug + "/" + page.slug)
+          xml.lastmod(page.updated_at.strftime('%Y-%m-%d'))
+          xml.changefreq('weekly')
+          xml.priority(0.8)
+
+          # If page has attached images, add them
+          if page.respond_to?(:images) && page.images.attached?
+            page.images.each do |image|
+              xml.image :image do
+                xml.image :loc, url_for(image)
+                xml.image :title, image.filename.to_s
+                xml.image :caption, "Image for #{page.slug}"
+              end
+            end
+          end
+        end
+      end
+    end
+
+    # Render XML with proper content type
+    render xml: xml.target!, content_type: 'application/xml'
+  end
+
+  def robots_txt
+    render plain: "User-agent: *\nAllow: /"
   end
 
   private

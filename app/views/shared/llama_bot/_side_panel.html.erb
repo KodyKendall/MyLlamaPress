@@ -8,6 +8,21 @@
       <span class="text-xs text-purple-400 group-hover:text-purple-300">Menu</span>
     </button>
 
+    <% if @page.present? %>
+    <button id="llama-select-mode-button" onclick="toggleSelectionMode()" class="mt-6 bg-slate-800 bg-opacity-0 hover:bg-opacity-100 p-3 rounded-r-lg cursor-pointer transition-all duration-300 shadow-lg group flex flex-col items-center gap-1 pr-4 relative z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" data-llama="app/views/shared/_chat.html.erb">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" data-llama="app/views/shared/_chat.html.erb"></path>
+      </svg>
+      <span class="text-xs mt-1 text-purple-400"> Select </span>
+    </button>
+    <button onclick="window.location.href='<%= edit_page_path(@page.id) %>'" class="mt-6 bg-slate-800 bg-opacity-0 hover:bg-opacity-100 p-3 rounded-r-lg cursor-pointer transition-all duration-300 shadow-lg group flex flex-col items-center gap-1 relative z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="min-width: 20px;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+      <span class="text-xs mt-1 text-purple-400">Settings</span>
+    </button>    
+    <% end %>
     <!-- Hidden menu items that appear on hover -->
     <div id="llama-menu-items" class="hidden group-hover/menu:flex flex-col gap-2 absolute top-0 right-0 pt-16 z-10">
     <!--Disable these additional menu items for now:-->
@@ -49,7 +64,7 @@
 
       <!-- Navigation Links with enhanced styling -->
       <div class="space-y-3">
-        <a href="/pages" class="flex items-center p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-all duration-300 group">
+        <a href="/home" class="flex items-center p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-all duration-300 group">
           <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-all duration-300">
             <i class="fas fa-home text-blue-400 group-hover:text-blue-300"></i>
           </div>
@@ -175,19 +190,19 @@
     </script>
 
     <hr class="my-2"/>
-    <h2 class="text-xl font-bold mb-2">Drag and Drop</h2>
-    <div id="drag-and-drop-list" class="space-y-6">
+<!--    <h2 class="text-xl font-bold mb-2">Drag and Drop</h2>
+    <div id="drag-and-drop-list" class="space-y-6">-->
     <%# snippets.each do |snippet| %> 
     <!-- Button Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Button</h3>
       <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" draggable="true">
         Click me
       </button>
-    </div>
+    </div>-->
 
     <!-- Card Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Card</h3>
       <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white" draggable="true">
         <div class="px-6 py-4">
@@ -197,19 +212,19 @@
           </p>
         </div>
       </div>
-    </div>
+    </div>-->
 
     <!-- Alert Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Alert</h3>
       <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert" draggable="true">
         <p class="font-bold">Warning</p>
         <p>This is an example alert message.</p>
       </div>
-    </div>
+    </div>-->
 
     <!-- Form Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Contact Form</h3>
       <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" draggable="true">
         <div class="mb-4">
@@ -237,9 +252,9 @@
         </div>
       </form>
     </div>
-
+-->
     <!-- Navigation Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Navigation</h3>
       <nav class="bg-gray-800 p-4" draggable="true">
         <div class="flex items-center justify-between flex-wrap">
@@ -261,10 +276,10 @@
           </div>
         </div>
       </nav>
-    </div>
+    </div>-->
 
     <!-- Testimonial Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Testimonial</h3>
       <div class="bg-white shadow-lg rounded-lg p-6" draggable="true">
         <div class="flex items-center mb-4">
@@ -276,10 +291,10 @@
         </div>
         <p class="text-gray-700">"This product has completely transformed our business. We've seen amazing results and couldn't be happier!"</p>
       </div>
-    </div>
+    </div>-->
 
     <!-- Feature List Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Feature List</h3>
       <div class="bg-white shadow rounded-lg p-6" draggable="true">
         <h3 class="text-xl font-bold mb-4">Key Features</h3>
@@ -291,10 +306,10 @@
           <li>Regular updates</li>
         </ul>
       </div>
-    </div>
+    </div>-->
 
     <!-- Call to Action Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Call to Action</h3>
       <div class="bg-blue-600 text-white text-center py-12 px-6 rounded-lg" draggable="true">
         <h2 class="text-3xl font-bold mb-4">Ready to get started?</h2>
@@ -303,10 +318,10 @@
           Sign Up Now
         </button>
       </div>
-    </div>
+    </div>-->
 
     <!-- Interactive Pricing Table Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Interactive Pricing Table</h3>
       <div class="bg-gradient-to-br from-purple-600 to-indigo-700 p-8 rounded-xl shadow-2xl" draggable="true">
         <h2 class="text-3xl font-extrabold text-white mb-6 text-center">Choose Your Plan</h2>
@@ -340,10 +355,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </div>-->
 
     <!-- Animated Skill Showcase Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Animated Skill Showcase</h3>
       <div class="bg-gray-900 p-8 rounded-xl shadow-2xl" draggable="true">
         <h2 class="text-3xl font-extrabold text-white mb-8 text-center">Our Expertise</h2>
@@ -387,16 +402,16 @@
           </div>
         </div>
       </div>
-    </div>
+    </div>-->
 
     <!-- Interactive Team Showcase Component -->
-    <div class="draggable-component mb-4">
+    <!--<div class="draggable-component mb-4">
       <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Interactive Team Showcase</h3>
       <div class="bg-gradient-to-r from-teal-400 to-blue-500 p-4 sm:p-8 rounded-xl shadow-2xl" draggable="true">
         <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-4 sm:mb-8 text-center">Meet Our Team</h2>
-        <div class="grid grid-cols-1 gap-4 sm:gap-8">
+        <div class="grid grid-cols-1 gap-4 sm:gap-8">-->
           <!-- Existing team member -->
-          <div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
+          <!--<div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
             <div class="flex flex-col sm:flex-row">
               <div class="relative w-full sm:w-1/3">
                 <img src="https://via.placeholder.com/300x200" alt="Team Member" class="w-full h-48 sm:h-full object-cover">
@@ -417,10 +432,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div>-->
           
           <!-- New team member: John Smith -->
-          <div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
+          <!--<div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
             <div class="flex flex-col sm:flex-row">
               <div class="relative w-full sm:w-1/3">
                 <img src="https://via.placeholder.com/300x200" alt="John Smith" class="w-full h-48 sm:h-full object-cover">
@@ -441,10 +456,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div>-->
 
           <!-- New team member: Emily Johnson -->
-          <div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
+          <!--<div class="team-member bg-white rounded-lg overflow-hidden shadow-lg transform transition duration-500 hover:scale-105">
             <div class="flex flex-col sm:flex-row">
               <div class="relative w-full sm:w-1/3">
                 <img src="https://via.placeholder.com/300x200" alt="Emily Johnson" class="w-full h-48 sm:h-full object-cover">
@@ -465,7 +480,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div>-->
         </div>
       </div>
     </div>
