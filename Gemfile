@@ -84,3 +84,6 @@ gem 'async-websocket'
 gem 'async-http'
 gem 'kaminari'
 gem 'async-io'
+
+# Use Builder to generate XML sitemaps
+gem 'builder'
