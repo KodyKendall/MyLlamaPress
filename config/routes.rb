@@ -7,6 +7,8 @@ Rails.application.routes.draw do
       get 'histories'
       post 'restore'
       post 'publish_to_wordpress'
+      post :page_undo
+      post :page_redo
     end
   end
   resources :sites
