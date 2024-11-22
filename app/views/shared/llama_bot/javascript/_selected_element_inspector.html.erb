@@ -1,0 +1,729 @@
+<style data-llama="exclude_when_saving_contenteditable_edits">
+    .llama-inspector-overlay {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border: 2px solid #4299e1;
+    background-color: rgba(66, 153, 225, 0.2);
+    }
+
+    .llama-inspector-overlay-margin {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        background-color: rgba(255, 215, 0, 0.4); /* Gold color */
+    }
+
+    .llama-inspector-overlay-padding {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        background-color: rgba(0, 255, 0, 0.4); /* Green color */
+    }
+
+    .llama-inspector-line {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    background-color: #4299e1;
+    display: none;
+    }
+
+    .llama-inspector-tooltip {
+        position: fixed;
+        z-index: 10000;
+        background-color: white;
+        color: #1a1a1a;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 14px;
+        min-width: 300px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        pointer-events: auto;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .llama-inspector-dimensions {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      background-color: #1a202c;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .llama-inspector-margin-dimensions {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      background-color: rgba(255, 215, 0, 0.9);
+      color: #000;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-size: 10px;
+      font-family: monospace;
+    }
+
+    .llama-inspector-padding-dimensions {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      background-color: rgba(0, 255, 0, 0.9);
+      color: #000;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-size: 10px;
+      font-family: monospace;
+    }
+</style>
+<script data-llama="exclude_when_saving_contenteditable_edits">
+  console.log("selected_element.html.erb");
+
+// Add this before the ElementInspector class definition
+window.llamaInspectorToggleClass = function(className, isChecked, llamaId) {
+  const target = document.querySelector(`[data-llama-id="${llamaId}"]`);
+  if (target) {
+    if (isChecked) {
+      target.classList.add(className);
+    } else {
+      target.classList.remove(className);
+    }
+  }
+};
+
+// script.js
+class ElementInspector {
+  constructor() {
+    this.toolTipEnabled = false;
+    this.isActive = false;
+    this.overlay = this.createOverlay();
+    this.marginOverlays = this.createMarginOverlays();
+    this.paddingOverlays = this.createPaddingOverlays();
+    this.tooltip = this.createTooltip();
+    this.lines = this.createLines();
+    this.dimensionsLabel = this.createDimensionsLabel();
+    this.marginLabels = this.createMarginLabels();
+    this.paddingLabels = this.createPaddingLabels();
+    this.init();
+  }
+
+  createOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'llama-inspector-overlay';
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  createMarginOverlays() {
+    const overlays = ['top', 'right', 'bottom', 'left'].map(() => {
+      const overlay = document.createElement('div');
+      overlay.className = 'llama-inspector-overlay-margin';
+      document.body.appendChild(overlay);
+      return overlay;
+    });
+    return overlays;
+  }
+
+  createPaddingOverlays() {
+    const overlays = ['top', 'right', 'bottom', 'left'].map(() => {
+      const overlay = document.createElement('div');
+      overlay.className = 'llama-inspector-overlay-padding';
+      document.body.appendChild(overlay);
+      return overlay;
+    });
+    return overlays;
+  }
+
+  createTooltip() {
+    if (this.toolTipEnabled){
+      const tooltip = document.createElement('div');
+      tooltip.className = 'llama-inspector-tooltip';
+      
+      // Create header banner
+      const header = document.createElement('div');
+      header.className = 'bg-gradient-to-r from-blue-600 to-blue-500 text-white p-2 flex justify-between items-center shadow-md rounded-t-md -mt-3 -mx-3 mb-2';
+      
+      // Add title
+      const title = document.createElement('span');
+      title.className = 'font-semibold text-lg';
+      title.textContent = 'LlamaBot';
+      
+      // Add close button
+      const closeButton = document.createElement('button');
+      closeButton.className = 'text-2xl hover:text-blue-200 transition-colors duration-200';
+      closeButton.innerHTML = '×';
+      closeButton.onclick = () => {
+        tooltip.style.display = 'none';
+        this.hideAll();
+      };
+      
+      this.toggleInspector(false);
+      
+      // Assemble header
+      header.appendChild(title);
+      header.appendChild(closeButton);
+      
+      // Add header to tooltip
+      tooltip.appendChild(header);
+      
+      document.body.appendChild(tooltip);
+      return tooltip;
+    }
+  }
+
+  createLines() {
+    const lines = [];
+    for (let i = 0; i < 8; i++) {
+      const line = document.createElement('div');
+      line.className = 'llama-inspector-line';
+      document.body.appendChild(line);
+      lines.push(line);
+    }
+    return lines;
+  }
+
+  createDimensionsLabel() {
+    const label = document.createElement('div');
+    label.className = 'llama-inspector-dimensions';
+    document.body.appendChild(label);
+    return label;
+  }
+
+  createMarginLabels() {
+    return ['top', 'right', 'bottom', 'left'].map(() => {
+      const label = document.createElement('div');
+      label.className = 'llama-inspector-margin-dimensions';
+      document.body.appendChild(label);
+      return label;
+    });
+  }
+
+  createPaddingLabels() {
+    return ['top', 'right', 'bottom', 'left'].map(() => {
+      const label = document.createElement('div');
+      label.className = 'llama-inspector-padding-dimensions';
+      document.body.appendChild(label);
+      return label;
+    });
+  }
+
+  toggleInspector(isActive) {
+    this.isActive = isActive;
+    console.log("selected element inspector is active: ", this.isActive);
+    if (this.isActive) {
+      document.body.style.cursor = 'crosshair';
+      console.log("setting cursor to crosshair");
+    } else {
+      document.body.style.cursor = 'default';
+      console.log("setting cursor to default");
+      // remove the overlays
+      this.hideAll();  //selected_element_inspector_container.hideAll()
+    }
+  }
+
+  setTailwindClassEditor(target){    
+    //we don't show the tailwind class editor if the tooltip is not being enabled (tooltip and tailwind class editor are the same thing.)
+    if (!this.toolTipEnabled) return; 
+
+    let classesHtml = this.getTailwindClassesFromTargetHtml(target);
+    let contentHtml = this.getTailwindContentFromTargetHtml(target, classesHtml);
+
+    // Find or create a content container
+    let contentContainer = this.tooltip.querySelector('.tooltip-content');
+    if (!contentContainer) {
+      contentContainer = document.createElement('div');
+      contentContainer.className = 'tooltip-content';
+      this.tooltip.appendChild(contentContainer);
+    }
+    contentContainer.innerHTML = contentHtml;
+  }
+
+  getTailwindClassesFromTargetHtml(target){
+      let classesHtml = `
+        <div id="llama-inspector-class-items-container">
+          ${target.classList.length
+            ? Array.from(target.classList)
+                .map(className => `
+                  <div class="class-item" style="
+                    display: inline-block;
+                    margin: 0 8px 8px 0;
+                    padding: 4px 8px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 999px;
+                    background-color: #f3f4f6;
+                  ">
+                    <label style="display: flex; align-items: center; gap: 8px; margin: 0;">
+                      <input type="checkbox" 
+                             checked 
+                             onchange="llamaInspectorToggleClass('${className}', this.checked, '${target.dataset.llamaId || ''}')" 
+                             class="class-toggle"
+                             style="margin: 0;"
+                      >
+                      <span>${className}</span>
+                    </label>
+                  </div>
+                `).join('')
+            : '<div style="font-style: italic; color: #666;">No classes</div>'}
+        </div>`;
+      return classesHtml;
+  }
+
+  getTailwindContentFromTargetHtml(target, classesHtml){
+      let contentHtml = `
+        <div style="border-bottom: 1px solid #374151; padding-bottom: 8px; margin-bottom: 8px;">
+          <strong>${target.tagName.toLowerCase()}</strong>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div class="relative">
+            <input type="text" 
+                   placeholder="Add class.." 
+                   class="llama-class-input"
+                   style="width: 100%; 
+                          padding: 6px;
+                          border-radius: 4px;
+                          border: 1px solid #4B5563;
+                          font-size: 12px;
+                          margin-bottom: 12px;"
+                   oninput="filterTailwindClasses(this, ${target.dataset.llamaId})"
+                   onkeydown="handleClassInput(event, this, ${target.dataset.llamaId})"
+            >
+            <div class="tailwind-dropdown hidden absolute left-0 right-0 bg-white border border-gray-300 max-h-40 overflow-y-auto z-50 rounded-md shadow-lg">
+            </div>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="margin-bottom: 8px; color: #9CA3AF;">Classes:</div>
+          <div style="max-height: 150px; overflow-y: auto; display: flex; flex-wrap: wrap;">
+            ${classesHtml}
+          </div>
+        </div>
+        <div style="border-top: 1px solid #374151; padding-top: 8px;">
+          <input type="text" 
+                 placeholder="What do you want to change?" 
+                 class="llama-class-input"
+                 onclick="toggleChat(); window.llamaElementInspector.toggleInspector(false); window.llamaElementInspector.hideAll();"
+                 style="width: 100%; 
+                        padding: 6px;
+                        border-radius: 4px;
+                        border: 1px solid #4B5563;
+                        font-size: 12px;"
+            >
+        </div>
+      `;
+      return contentHtml;
+  }
+
+
+  init() {
+    document.addEventListener('mousemove', (e) => {
+      if (!this.isActive) return;
+
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(target);
+      
+      this.updateOverlays(rect, computedStyle);
+
+      // Update tooltip
+      const margin = {
+        top: computedStyle.marginTop,
+        right: computedStyle.marginRight,
+        bottom: computedStyle.marginBottom,
+        left: computedStyle.marginLeft
+      };
+
+      const padding = {
+        top: computedStyle.paddingTop,
+        right: computedStyle.paddingRight,
+        bottom: computedStyle.paddingBottom,
+        left: computedStyle.paddingLeft
+      };
+
+      if (this.toolTipEnabled) {  //disable the tailwind inspector window tooltip for now.
+        this.tooltip.style.display = 'block';
+        this.tooltip.style.left = `${e.clientX + 15}px`;
+        this.tooltip.style.top = `${e.clientY + 15}px`;
+        this.setTailwindClassEditor(target);
+      }
+
+      // Update lines
+      const linePositions = [
+        // Top Left Corner
+        { // Vertical line up
+          left: rect.left,
+          top: 0,
+          width: '1px',
+          height: `${rect.top}px`
+        },
+        { // Horizontal line left
+          left: 0,
+          top: rect.top,
+          width: `${rect.left}px`,
+          height: '1px'
+        },
+        
+        // Top Right Corner
+        { // Vertical line up
+          left: rect.right,
+          top: 0,
+          width: '1px',
+          height: `${rect.top}px`
+        },
+        { // Horizontal line right
+          left: rect.right,
+          top: rect.top,
+          width: `${window.innerWidth - rect.right}px`,
+          height: '1px'
+        },
+
+        // Bottom Left Corner
+        { // Vertical line down
+          left: rect.left,
+          top: rect.bottom,
+          width: '1px',
+          height: `${window.innerHeight - rect.bottom}px`
+        },
+        { // Horizontal line left
+          left: 0,
+          top: rect.bottom,
+          width: `${rect.left}px`,
+          height: '1px'
+        },
+
+        // Bottom Right Corner
+        { // Vertical line down
+          left: rect.right,
+          top: rect.bottom,
+          width: '1px',
+          height: `${window.innerHeight - rect.bottom}px`
+        },
+        { // Horizontal line right
+          left: rect.right,
+          top: rect.bottom,
+          width: `${window.innerWidth - rect.right}px`,
+          height: '1px'
+        }
+      ];
+
+      this.lines.forEach((line, index) => {
+        const pos = linePositions[index];
+        line.style.display = 'block';
+        line.style.left = `${pos.left}px`;
+        line.style.top = `${pos.top}px`;
+        line.style.width = pos.width;
+        line.style.height = pos.height;
+      });
+    });
+
+    document.addEventListener('mouseleave', () => {
+      this.hideAll();
+    });
+  }
+
+  hideAll() {
+
+    //these conditional checks protect against nulls & undefineds
+    if (this?.overlay) this.overlay.style.display = 'none';
+    if (this?.tooltip) this.tooltip.style.display = 'none';
+    this?.lines?.forEach(line => line && (line.style.display = 'none'));
+    this?.marginOverlays?.forEach(overlay => overlay && (overlay.style.display = 'none'));
+    this?.paddingOverlays?.forEach(overlay => overlay && (overlay.style.display = 'none'));
+    if (this?.dimensionsLabel) this.dimensionsLabel.style.display = 'none';
+    this?.marginLabels?.forEach(label => label && (label.style.display = 'none'));
+    this?.paddingLabels?.forEach(label => label && (label.style.display = 'none'));
+  }
+
+  updateOverlays(rect, computedStyle) {
+    // Update main element overlay (blue)
+    this.overlay.style.display = 'block';
+    this.overlay.style.left = `${rect.left}px`;
+    this.overlay.style.top = `${rect.top}px`;
+    this.overlay.style.width = `${rect.width}px`;
+    this.overlay.style.height = `${rect.height}px`;
+    this.overlay.style.backgroundColor = 'rgba(66, 153, 225, 0.2)';
+
+    // Get computed margins and padding
+    const margin = {
+      top: parseFloat(computedStyle.marginTop),
+      right: parseFloat(computedStyle.marginRight),
+      bottom: parseFloat(computedStyle.marginBottom),
+      left: parseFloat(computedStyle.marginLeft)
+    };
+
+    const padding = {
+      top: parseFloat(computedStyle.paddingTop),
+      right: parseFloat(computedStyle.paddingRight),
+      bottom: parseFloat(computedStyle.paddingBottom),
+      left: parseFloat(computedStyle.paddingLeft)
+    };
+
+    // Update margin overlays (gold)
+    // Top margin
+    this.marginOverlays[0].style.display = 'block';
+    this.marginOverlays[0].style.left = `${rect.left - margin.left}px`;
+    this.marginOverlays[0].style.top = `${rect.top - margin.top}px`;
+    this.marginOverlays[0].style.width = `${rect.width + margin.left + margin.right}px`;
+    this.marginOverlays[0].style.height = `${margin.top}px`;
+
+    // Right margin
+    this.marginOverlays[1].style.display = 'block';
+    this.marginOverlays[1].style.left = `${rect.right}px`;
+    this.marginOverlays[1].style.top = `${rect.top - margin.top}px`;
+    this.marginOverlays[1].style.width = `${margin.right}px`;
+    this.marginOverlays[1].style.height = `${rect.height + margin.top + margin.bottom}px`;
+
+    // Bottom margin
+    this.marginOverlays[2].style.display = 'block';
+    this.marginOverlays[2].style.left = `${rect.left - margin.left}px`;
+    this.marginOverlays[2].style.top = `${rect.bottom}px`;
+    this.marginOverlays[2].style.width = `${rect.width + margin.left + margin.right}px`;
+    this.marginOverlays[2].style.height = `${margin.bottom}px`;
+
+    // Left margin
+    this.marginOverlays[3].style.display = 'block';
+    this.marginOverlays[3].style.left = `${rect.left - margin.left}px`;
+    this.marginOverlays[3].style.top = `${rect.top - margin.top}px`;
+    this.marginOverlays[3].style.width = `${margin.left}px`;
+    this.marginOverlays[3].style.height = `${rect.height + margin.top + margin.bottom}px`;
+
+    // Update padding overlays (green)
+    // Top padding
+    this.paddingOverlays[0].style.display = 'block';
+    this.paddingOverlays[0].style.left = `${rect.left}px`;
+    this.paddingOverlays[0].style.top = `${rect.top}px`;
+    this.paddingOverlays[0].style.width = `${rect.width}px`;
+    this.paddingOverlays[0].style.height = `${padding.top}px`;
+
+    // Right padding
+    this.paddingOverlays[1].style.display = 'block';
+    this.paddingOverlays[1].style.left = `${rect.right - padding.right}px`;
+    this.paddingOverlays[1].style.top = `${rect.top}px`;
+    this.paddingOverlays[1].style.width = `${padding.right}px`;
+    this.paddingOverlays[1].style.height = `${rect.height}px`;
+
+    // Bottom padding
+    this.paddingOverlays[2].style.display = 'block';
+    this.paddingOverlays[2].style.left = `${rect.left}px`;
+    this.paddingOverlays[2].style.top = `${rect.bottom - padding.bottom}px`;
+    this.paddingOverlays[2].style.width = `${rect.width}px`;
+    this.paddingOverlays[2].style.height = `${padding.bottom}px`;
+
+    // Left padding
+    this.paddingOverlays[3].style.display = 'block';
+    this.paddingOverlays[3].style.left = `${rect.left}px`;
+    this.paddingOverlays[3].style.top = `${rect.top}px`;
+    this.paddingOverlays[3].style.width = `${padding.left}px`;
+    this.paddingOverlays[3].style.height = `${rect.height}px`;
+
+    // Update dimensions label
+    this.dimensionsLabel.style.display = 'block';
+    this.dimensionsLabel.style.left = `${rect.right - 5}px`;  // 5px offset from right
+    this.dimensionsLabel.style.top = `${rect.top - 25}px`;    // 25px above the element
+    this.dimensionsLabel.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)}`;
+    
+    // Add transform to shift the label left by its own width
+    this.dimensionsLabel.style.transform = 'translateX(-100%)';
+
+    // Update margin labels
+    const marginValues = {
+      top: margin.top,
+      right: margin.right,
+      bottom: margin.bottom,
+      left: margin.left
+    };
+
+    // Position labels inside margin overlays
+    this.marginLabels.forEach((label, index) => {
+      const side = ['top', 'right', 'bottom', 'left'][index];
+      label.style.display = marginValues[side] > 0 ? 'block' : 'none';
+      label.textContent = `${Math.round(marginValues[side])}px`;
+
+      switch(side) {
+        case 'top':
+          label.style.left = `${rect.left + rect.width / 2}px`;
+          label.style.top = `${rect.top - margin.top / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'right':
+          label.style.left = `${rect.right + margin.right / 2}px`;
+          label.style.top = `${rect.top + rect.height / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'bottom':
+          label.style.left = `${rect.left + rect.width / 2}px`;
+          label.style.top = `${rect.bottom + margin.bottom / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'left':
+          label.style.left = `${rect.left - margin.left / 2}px`;
+          label.style.top = `${rect.top + rect.height / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+      }
+    });
+
+    // Update padding labels
+    const paddingValues = {
+      top: padding.top,
+      right: padding.right,
+      bottom: padding.bottom,
+      left: padding.left
+    };
+
+    // Position labels inside padding overlays
+    this.paddingLabels.forEach((label, index) => {
+      const side = ['top', 'right', 'bottom', 'left'][index];
+      label.style.display = paddingValues[side] > 0 ? 'block' : 'none';
+      label.textContent = `${Math.round(paddingValues[side])}px`;
+
+      switch(side) {
+        case 'top':
+          label.style.left = `${rect.left + rect.width / 2}px`;
+          label.style.top = `${rect.top + padding.top / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'right':
+          label.style.left = `${rect.right - padding.right / 2}px`;
+          label.style.top = `${rect.top + rect.height / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'bottom':
+          label.style.left = `${rect.left + rect.width / 2}px`;
+          label.style.top = `${rect.bottom - padding.bottom / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+        case 'left':
+          label.style.left = `${rect.left + padding.left / 2}px`;
+          label.style.top = `${rect.top + rect.height / 2}px`;
+          label.style.transform = 'translate(-50%, -50%)';
+          break;
+      }
+    });
+  }  
+}
+
+// Initialize the inspector
+const llamaElementInspector = new ElementInspector();
+window.llamaElementInspector = llamaElementInspector;
+
+const tailwindClasses = [
+  // Layout
+  'container', 'flex', 'grid', 'block', 'inline', 'inline-block', 'hidden',
+  'flex-row', 'flex-col', 'flex-wrap', 'flex-nowrap',
+  'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-6', 'grid-cols-12',
+  'gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6', 'gap-8', 'gap-10',
+
+  // Spacing
+  'p-0', 'p-1', 'p-2', 'p-3', 'p-4', 'p-5', 'p-6', 'p-8', 'p-10',
+  'px-1', 'px-2', 'px-3', 'px-4', 'px-6', 'px-8',
+  'py-1', 'py-2', 'py-3', 'py-4', 'py-6', 'py-8',
+  'm-1', 'm-2', 'm-3', 'm-4', 'm-5', 'm-6', 'm-8', 'm-10',
+  'mx-auto', 'mx-1', 'mx-2', 'mx-3', 'mx-4', 'mx-6', 'mx-8',
+  'my-1', 'my-2', 'my-3', 'my-4', 'my-6', 'my-8',
+
+  // Colors
+  'text-white', 'text-black', 'text-gray-50', 'text-gray-100', 'text-gray-200', 'text-gray-300', 'text-gray-400',
+  'text-gray-500', 'text-gray-600', 'text-gray-700', 'text-gray-800', 'text-gray-900',
+  'bg-white', 'bg-black', 'bg-transparent',
+  'bg-gray-50', 'bg-gray-100', 'bg-gray-200', 'bg-gray-300', 'bg-gray-400',
+  'bg-gray-500', 'bg-gray-600', 'bg-gray-700', 'bg-gray-800', 'bg-gray-900',
+  'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500',
+  'text-red-500', 'text-blue-500', 'text-green-500', 'text-yellow-500', 'text-purple-500', 'text-pink-500',
+
+  // Typography
+  'text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl',
+  'font-thin', 'font-light', 'font-normal', 'font-medium', 'font-semibold', 'font-bold',
+  'text-left', 'text-center', 'text-right', 'text-justify',
+  'uppercase', 'lowercase', 'capitalize', 'normal-case',
+  'truncate', 'overflow-ellipsis', 'overflow-clip',
+
+  // Borders
+  'border', 'border-0', 'border-2', 'border-4', 'border-8',
+  'border-t', 'border-r', 'border-b', 'border-l',
+  'rounded-none', 'rounded-sm', 'rounded', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-full',
+
+  // Effects
+  'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl', 'shadow-none',
+  'opacity-0', 'opacity-25', 'opacity-50', 'opacity-75', 'opacity-100',
+
+  // Flexbox & Grid
+  'items-start', 'items-center', 'items-end', 'items-stretch',
+  'justify-start', 'justify-center', 'justify-end', 'justify-between', 'justify-around',
+  'flex-1', 'flex-auto', 'flex-initial', 'flex-none',
+  'order-1', 'order-2', 'order-3', 'order-none',
+
+  // Positioning
+  'static', 'fixed', 'absolute', 'relative', 'sticky',
+  'top-0', 'right-0', 'bottom-0', 'left-0',
+  'z-0', 'z-10', 'z-20', 'z-30', 'z-40', 'z-50',
+
+  // Sizing
+  'w-full', 'w-screen', 'w-auto', 'w-1/2', 'w-1/3', 'w-2/3', 'w-1/4', 'w-3/4',
+  'h-full', 'h-screen', 'h-auto', 'h-1/2', 'h-1/3', 'h-2/3', 'h-1/4', 'h-3/4',
+
+  // Interactivity
+  'cursor-pointer', 'cursor-not-allowed', 'cursor-wait', 'cursor-text',
+  'select-none', 'select-text', 'select-all', 'select-auto',
+
+  // Transitions & Animation
+  'transition', 'transition-all', 'transition-colors', 'transition-opacity',
+  'duration-100', 'duration-200', 'duration-300', 'duration-500',
+  'ease-in', 'ease-out', 'ease-in-out',
+
+  // Hover, Focus, & Other States
+  'hover:bg-gray-100', 'hover:text-blue-500', 'hover:underline',
+  'focus:outline-none', 'focus:ring', 'focus:border-blue-500',
+  'disabled:opacity-50', 'disabled:cursor-not-allowed'
+];
+
+function filterTailwindClasses(input, elementLlamaId) {
+  element = document.querySelector(`[data-llama-id='${elementLlamaId}']`);
+  if (!element) return;
+
+  const dropdown = input.parentElement.querySelector('.tailwind-dropdown');
+  const value = input.value.toLowerCase();
+  
+  if (!value) {
+    dropdown.classList.add('hidden');
+    return;
+  }
+
+  const filtered = tailwindClasses.filter(cls => 
+    cls.toLowerCase().includes(value)
+  );
+
+  if (filtered.length > 0) {
+    dropdown.innerHTML = filtered
+      .map(cls => `<div class="p-2 hover:bg-gray-100 cursor-pointer tailwind-option">${cls}</div>`)
+      .join('');
+    dropdown.classList.remove('hidden');
+
+    dropdown.querySelectorAll('.tailwind-option').forEach(option => {
+      option.onclick = () => {
+        element.classList.add(option.textContent);
+        input.value = '';
+        dropdown.classList.add('hidden');
+      };
+    });
+  } else {
+    dropdown.classList.add('hidden');
+  }
+}
+
+function handleClassInput(event, input, elementLlamaId) {
+  element = document.querySelector(`[data-llama-id='${elementLlamaId}']`);
+  if (event.key === 'Enter') {
+    if (element) {
+      element.classList.add(input.value);
+      input.value = '';
+      input.parentElement.querySelector('.tailwind-dropdown').classList.add('hidden');
+    }
+  }
+}
+</script>
