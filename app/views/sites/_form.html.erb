@@ -42,6 +42,14 @@
   <div class="my-5">
     <%= form.label :wordpress_api_encoded_token, "WordPress API Token" %>
     <%= form.text_field :wordpress_api_encoded_token, class: "block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full" %>
+
+    <%= form.label :after_submission_page_id, "After Submission Page" %>
+    <%= form.collection_select :after_submission_page_id, 
+        Page.where(site_id: site.id), 
+        :id, 
+        :slug, 
+        { prompt: "Select After Submission Page" }, 
+        { class: "block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full" } %>
   </div>
 
   <div class="inline">
