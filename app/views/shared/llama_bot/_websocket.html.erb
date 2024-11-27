@@ -3,6 +3,28 @@
   console.log("Loaded...");
 
   let isLoading = false;
+  let lastPongTime = Date.now() - 30000;
+  let connectionCheckInterval;
+
+  // Add this function to update the status indicator
+  function updateConnectionStatus() {
+    const timeSinceLastPong = Date.now() - lastPongTime;
+    
+    if (timeSinceLastPong < 30000) { // Less than 30 seconds
+      updateStatusIcon('bg-green-500');
+    } else if (timeSinceLastPong < 50000) { // Between 30-50 seconds
+      updateStatusIcon('bg-yellow-400');
+    } else { // More than 50 seconds
+      updateStatusIcon('bg-red-500');
+    }
+  }
+
+  // Update the status icon with the given color
+  function updateStatusIcon(color) {
+    const statusIndicator = document.getElementById('statusIcon');
+    statusIndicator.classList.remove('bg-yellow-400', 'bg-red-500', 'bg-green-500');  // Remove all existing classes
+    statusIndicator.classList.add(color);
+  }
 
   /**
    * Initialize the chat channel (ActionCable). This allows us to send and receive messages to LlamaBot Backend.
@@ -16,6 +38,7 @@
     console.log("Initializing Chat...");
     
     const consumer = ActionCable.createConsumer();
+    connectionCheckInterval = setInterval(updateConnectionStatus, 1000);
     
     // Initialize ActionCable Consumer (this is the channel we're subscribing to in chat_channel.rb)
     chatChannel = consumer.subscriptions.create(
@@ -26,18 +49,27 @@
          */
         received(data) {
           console.log("Received response from LlamaBot Backend:", data);
-          hideLoadingIndicator();
-          
-          // Reset send button state
-          const sendButton = document.getElementById('sendButton');
-          sendButton.textContent = 'Send';
-          sendButton.classList.remove('bg-red-500', 'hover:bg-red-600');
-          sendButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
-          
+
           try {
             // Parse the incoming data - simplify the parsing chain
             const parsed = JSON.parse(data);
+
+            if(parsed.message.type == "external_ws_pong") {
+              lastPongTime = Date.now(); // Update last pong time, which will keep the status icon green
+              return;
+            }
+
             const parsedData = JSON.parse(parsed.message);
+
+            // This will run regardless of success or failure
+            isLoading = false;
+
+            hideLoadingIndicator();
+            // Reset send button state
+            const sendButton = document.getElementById('sendButton');
+            sendButton.textContent = 'Send';
+            sendButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            sendButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
 
             // if (parsedData.content === 'Workflow completed') {
             //   window.location.reload();
@@ -58,6 +90,10 @@
                 addMessage("Received changes. Writing to the file system...", "system");
                 window.location.reload();
                 break;
+              case 'external_ws_pong':
+                lastPongTime = Date.now();
+                console.log("Received pong response from LlamaBot Backend, which means we're connected");
+                break;
               default:
                 console.warn("Unknown message type:", parsedData.type);
                 addMessage(`Unknown message type: ${parsedData.type}`, "system");
@@ -65,6 +101,15 @@
           } catch (error) {
             console.error("Error parsing or processing received data:", error);
             addMessage(`Error: ${error.message}`, "bot");
+                        // This will run regardless of success or failure
+            isLoading = false;
+
+            hideLoadingIndicator();
+            // Reset send button state
+            const sendButton = document.getElementById('sendButton');
+            sendButton.textContent = 'Send';
+            sendButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            sendButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
           }
         },
 
@@ -75,7 +120,7 @@
 
     disconnected() {
       console.log("Disconnected from ChatChannel. Attempting to reconnect...");
-    // You can also implement exponential backoff for reconnection here
+      clearInterval(connectionCheckInterval);
       setTimeout(() => consumer.connection.reopen(), 5000);
     },
 
@@ -194,12 +239,12 @@ document.addEventListener("visibilitychange", function() {
       chatbotMessages.appendChild(loadingDiv);
     }
 
-    function hideLoadingIndicator() {
-      const loadingDiv = document.getElementById("loadingIndicator");
-      if (loadingDiv) {
-        loadingDiv.remove();
-      }
-    }
+    //function hideLoadingIndicator() {
+    //  const loadingDiv = document.getElementById("loadingIndicator");
+    //  if (loadingDiv) {
+    //    loadingDiv.remove();
+    //  }
+    //}
 
     function autoResizeUserInputArea() {
         textarea.style.height = 'auto';
@@ -270,7 +315,7 @@ async function sendUserMessageOverSocket(userMessage, selectedElementInnerHtml, 
           thinkingElement.textContent = 'Cancelling...';
         }
         
-        // Update button text and disable it
+        // Update button text and disable it temporarily
         const sendButton = document.getElementById('sendButton');
         sendButton.textContent = 'Cancelling...';
         sendButton.disabled = true;
@@ -285,6 +330,14 @@ async function sendUserMessageOverSocket(userMessage, selectedElementInnerHtml, 
         
         // Remove the cancel handler after it's used
         sendButton.removeEventListener('click', cancelHandler);
+        
+        // Re-enable the button after a short delay
+        setTimeout(() => {
+          sendButton.disabled = false;
+          sendButton.textContent = 'Send';
+          sendButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+          sendButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }, 1000);
       };
       
       sendButton.addEventListener('click', cancelHandler);
