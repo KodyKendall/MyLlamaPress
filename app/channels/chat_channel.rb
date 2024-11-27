@@ -68,6 +68,7 @@ class ChatChannel < ApplicationCable::Channel
 
   # LlamaBot subscribes to this channel in _websocket.html.erb.
   def subscribed
+    reject unless current_user
     stream_from "chat_channel_#{params[:session_id]}" # Public stream for session-based messages <- this is the channel we're subscribing to in _websocket.html.erb
     Rails.logger.info "Subscribed to chat channel with session ID: #{params[:session_id]}"
     stream_for current_user
@@ -99,16 +100,17 @@ class ChatChannel < ApplicationCable::Channel
     
     # Clean up the connection
     if @external_ws_connection
-      @external_ws_connection.close
-      Rails.logger.info "Closed external WebSocket connection for: #{connection_id}"
+      begin
+        @external_ws_connection.close
+        Rails.logger.info "Closed external WebSocket connection for: #{connection_id}"
+      rescue RuntimeError => e
+        Rails.logger.warn "Could not close WebSocket connection: #{e.message}"
+      end
     end
   end
 
   # Receive messages from the llamabot/_chat.html.erb chatbot.
   def receive(data)
-    # Log the incoming WebSocket data
-    Rails.logger.info "Received data: #{data.inspect}"
-    
     # Standardize field names so LlamaBot Backend can understand
     data["web_page_id"] = data["webPageId"]
     data["user_message"] = data["message"] 
@@ -136,6 +138,8 @@ class ChatChannel < ApplicationCable::Channel
     
     # Forward the processed data to the LlamaBot Backend Socket
     send_to_external_application(data)
+    # Log the incoming WebSocket data
+    Rails.logger.info "Received data: #{data.inspect}"
   end
 
   private
@@ -167,13 +171,16 @@ class ChatChannel < ApplicationCable::Channel
         end
     )
 
-
     # Initialize the connection and store it in an instance variable
     @external_ws_task = Async do |task|
       begin
         @external_ws_connection = Async::WebSocket::Client.connect(endpoint)
         Rails.logger.info "Connected to external WebSocket for connection: #{connection_id}"
-
+        
+        #Tell llamabot frontend that we've connected to the backend
+        formatted_message = { message: {type: "external_ws_pong"} }.to_json
+        ActionCable.server.broadcast "chat_channel_#{params[:session_id]}", formatted_message
+        
         # Store tasks in instance variables so we can clean them up later
         @listener_task = task.async do
           listen_to_external_websocket(@external_ws_connection)
@@ -218,7 +225,6 @@ class ChatChannel < ApplicationCable::Channel
 
           # Broadcast the message to the public channel so llamabot/_chat.html.erb can display it
           formatted_message = { message: message_content }.to_json
-          
 
           #Get the last chat conversation for this page and save this message to it
           chat_conversation = ChatConversation.find_by(page_id: parsed_message["page_id"])
@@ -238,7 +244,8 @@ class ChatChannel < ApplicationCable::Channel
           # Add any additional handling for write_code messages here
         when "pong"
           Rails.logger.debug "Received pong response"
-          next  #skip broadcast on pong
+          # Tell llamabot frontend that we've received a pong response, and we're still connected
+          formatted_message = { message: {type: "external_ws_pong"} }.to_json
         end
       rescue JSON::ParserError => e
         Rails.logger.error "Failed to parse message as JSON: #{e.message}"
@@ -250,7 +257,6 @@ class ChatChannel < ApplicationCable::Channel
   # TODO: Send keep-alive pings to the LlamaBot Backend
   def send_keep_alive_pings(connection)
     loop do
-      sleep 30
       ping_message = {
         type: 'ping',
         connection_id: @connection_id,
@@ -258,7 +264,9 @@ class ChatChannel < ApplicationCable::Channel
         connection_class: connection.class.name
       }.to_json
       connection.write(ping_message)
+      connection.flush
       Rails.logger.debug "Sent keep-alive ping: #{ping_message}"
+      Async::Task.current.sleep(30)
     end
   rescue => e
     Rails.logger.error "Error in keep-alive ping: #{e.message} | Connection type: #{connection.class.name}"
@@ -272,6 +280,7 @@ class ChatChannel < ApplicationCable::Channel
     if @external_ws_connection
       begin
         @external_ws_connection.write(payload)
+        @external_ws_connection.flush
         Rails.logger.info "Sent message to external WebSocket: #{payload}"
       rescue => e
         Rails.logger.error "Error sending message to external WebSocket: #{e.message}"

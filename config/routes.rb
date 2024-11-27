@@ -11,11 +11,18 @@ Rails.application.routes.draw do
       post 'publish_to_wordpress'
       post :page_undo
       post :page_redo
+      post 'restore_with_history'
     end
   end
   resources :sites
   resources :page_histories
   devise_for :users, controllers: { registrations: 'users/registrations', sessions: 'users/sessions' }
+
+  resources :page_histories do
+    member do 
+      get 'list'
+    end
+  end
   
   resources :users do
     put 'set_tutorial_step', on: :collection
@@ -62,9 +69,10 @@ Rails.application.routes.draw do
   get 'sitemap.xml', to: 'pages#sitemap_xml', defaults: { format: 'xml' }
   get 'robots.txt', to: 'pages#robots_txt', defaults: { format: 'txt' }
 
-  # Catch-all route at the end
+  # Make sure this is the LAST route
   get '*path', to: 'pages#resolve_slug', constraints: lambda { |request|
-    !request.path.start_with?('/rails/') && !request.path.start_with?('/cable')
+    !request.path.start_with?('/rails/') && 
+    !request.path.start_with?('/cable') && 
+    !request.path.start_with?('/page_histories')
   }
-
 end
